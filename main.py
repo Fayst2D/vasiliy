@@ -8,8 +8,8 @@ from google import genai as ga
 from src.agent import GeminiAgent
 from src.app import Application
 from src.context import SQLiteChatContextManager
-from src.tools import Tool
-from src.tools.telegram import write_to_chat, reply_to_message, \
+from src.tools import Tool, as_tool
+from src.tools.telegram import write_to_chat, leave_chat, \
     make_sticker_tool, play_casino
 
 
@@ -32,6 +32,7 @@ def create_sticker_tool() -> Tool:
 def get_tools() -> list[Tool]:
     return [
         write_to_chat,
+        leave_chat,
         # reply_to_message,
         play_casino,
         create_sticker_tool()
@@ -62,7 +63,7 @@ async def main() -> None:
     await context_manager.initialize_db()
 
     tools = get_tools()
-    tools.append(context_manager.update_context)
+    tools.append(as_tool(context_manager.update_context))
 
     for tool in tools:
         print(tool.description)

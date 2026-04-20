@@ -22,6 +22,16 @@ async def write_to_chat(message: str, context: ToolCallContext) -> None:
 
 
 @as_tool
+async def leave_chat(context: ToolCallContext) -> None:
+    """
+    Leave the chat. Forever
+    """
+    await context.bot.leave_chat(
+        context.chat_id,
+    )
+
+
+@as_tool
 async def reply_to_message(
     message_id: int,
     message: str,

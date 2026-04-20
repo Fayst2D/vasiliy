@@ -107,13 +107,13 @@ class SQLiteChatContextManager(ChatContextManager):
         new_context: str
     ) -> None:
         async with self.session_factory() as session:
-            async with session.begin():
-                stmt = sqlite_insert(ChatMetadata).values(
-                    chat_id=chat_id, 
-                    context=new_context
-                )
-                upsert_stmt = stmt.on_conflict_do_update(
-                    index_elements=['chat_id'],  # Primary Key
-                    set_=dict(context=new_context)
-                )
-                await session.execute(upsert_stmt)
+            stmt = sqlite_insert(ChatMetadata).values(
+                chat_id=chat_id,
+                context=new_context
+            )
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["chat_id"],
+                set_={"context": new_context}
+            )
+            await session.execute(stmt)
+            await session.commit()  # optional depending on session.begin()

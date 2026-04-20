@@ -104,6 +104,7 @@ class GeminiAgent(Agent):
                     else:
                         result = f'ERROR: Tool {tool_name} not found'
 
+                    print(f'Result: {result}', flush=True)
                     function_results.append({
                         'type': 'function_result',
                         'name': output.name,
