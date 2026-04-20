@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+.mypy_cache
+.vscode
+
+chat_history.db
+chat_history.db-shm
+chat_history.db-wal
+
+keys.yaml
+
+config/stickers_cool.yaml
+config/system_prompt_cool.txt

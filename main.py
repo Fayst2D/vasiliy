@@ -1,0 +1,95 @@
+import asyncio
+
+import yaml  # type: ignore
+
+from aiogram import Bot, Dispatcher, F
+from google import genai as ga
+
+from src.agent import GeminiAgent
+from src.app import Application
+from src.context import SQLiteChatContextManager
+from src.tools import Tool
+from src.tools.telegram import write_to_chat, reply_to_message, \
+    make_sticker_tool, play_casino
+
+
+def read_yaml(p: str) -> dict:
+    with open(p, 'r') as file:
+        return yaml.safe_load(file)
+
+
+def create_sticker_tool() -> Tool:
+    config = read_yaml('config/stickers.yaml')
+    data = [
+        {
+            'name': name,
+            **value
+        } for name, value in config.items()
+    ]
+    return make_sticker_tool(data)
+
+
+def get_tools() -> list[Tool]:
+    return [
+        write_to_chat,
+        # reply_to_message,
+        play_casino,
+        create_sticker_tool()
+    ]
+
+
+async def build_system_prompt(bot: Bot) -> str:
+    with open('config/system_prompt.txt', 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    me = await bot.me()
+    return content.format(
+        bot_username=me.full_name,
+        bot_shortname=me.username,
+    )
+
+
+async def main() -> None:
+    config = read_yaml('config/config.yaml')
+    keys = read_yaml('keys.yaml')
+
+    bot = Bot(token=keys['telegram'])
+    dp = Dispatcher()
+
+    context_manager = SQLiteChatContextManager(
+        db_url=config['database']['url']
+    )
+    await context_manager.initialize_db()
+
+    tools = get_tools()
+    tools.append(context_manager.update_context)
+
+    for tool in tools:
+        print(tool.description)
+
+    agent = GeminiAgent(
+        client=ga.Client(
+            api_key=keys['gemini']
+        ),
+        model_name=config['model']['name'],
+        tools=tools,
+        generation_config=config['generation_config'],
+    )
+
+    app = Application(
+        bot=bot,
+        system_prompt=await build_system_prompt(bot),
+        context_manager=context_manager,
+        agent=agent,
+        messages_limit=config['app']['messages_context_limit']
+    )
+
+    dp.message(F.text)(app.message_handler)
+
+    asyncio.create_task(app.background_worker())
+
+    await dp.start_polling(bot)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
