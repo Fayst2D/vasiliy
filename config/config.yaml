@@ -7,3 +7,4 @@ database:
   url: sqlite+aiosqlite:///chat_history.db
 app:
   messages_context_limit: 30
+  concurrency_limit: 4

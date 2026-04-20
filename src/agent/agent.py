@@ -42,18 +42,20 @@ class GeminiAgent(Agent):
         tools: list[Tool],
         generation_config: dict[str, tp.Any] | None = None,
         sleep_time: float = 0.3,
+        concurrency_limit: int = 4,
     ) -> None:
         self._client = client
         self._model_name = model_name
         self._tools = tools
         self._generation_config = generation_config
         self._sleep_time = sleep_time
+        self._concurrency_limit = concurrency_limit
 
         self._name_to_tool = {
             tool.name: tool
             for tool in self._tools
         }
-        self._semaphore = Semaphore(1)
+        self._semaphore = Semaphore(self._concurrency_limit)
 
     async def execute(
         self,

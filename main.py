@@ -75,6 +75,7 @@ async def main() -> None:
         model_name=config['model']['name'],
         tools=tools,
         generation_config=config['generation_config'],
+        concurrency_limit=config['app']['concurrency_limit']
     )
 
     app = Application(
