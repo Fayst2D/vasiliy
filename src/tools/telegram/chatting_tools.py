@@ -92,7 +92,6 @@ def make_sticker_tool(sticker_descriptions: list[dict[str, str]]):
         if sticker_name not in sticker_name_to_id:
             return f'ERROR: Sticker {sticker_name} doesn\'t exist!'
 
-        print(sticker_name_to_id[sticker_name], flush=True)
         await context.bot.send_sticker(
             chat_id=context.chat_id,
             sticker=sticker_name_to_id[sticker_name],

@@ -5,8 +5,12 @@ from asyncio import sleep, Semaphore
 
 from google import genai as ga
 
+from ..logging import setup_logger
 from ..tools import Tool
 from ..types import ToolCallContext
+
+
+_logger = setup_logger(__name__, 'logs/agent.txt')
 
 
 async def try_n_times(callable_, n: int):
@@ -14,13 +18,10 @@ async def try_n_times(callable_, n: int):
         try:
             result = await callable_()
             if i > 0:
-                print('Successful retry!', flush=True)
+                _logger.info(f'Successful retry after {i} tries')
             return result
-        except Exception as e:
-            import traceback
-            print(e, flush=True)
-            print(traceback.format_exc(), flush=True)
-            print('Retrying...', flush=True)
+        except Exception:
+            _logger.exception('Exception during retrying')
 
 
 class Agent(ABC):
@@ -96,17 +97,24 @@ class GeminiAgent(Agent):
 
                     if tool_name in self._name_to_tool:
                         tool = self._name_to_tool[tool_name]
-                        print(f'Calling {tool_name} with parameters: {arguments}', flush=True)
+                        _logger.debug(
+                            f'[{output.id}; {context.chat_id}] ' +
+                            f'Calling {tool_name}' +
+                            f' with parameters: {arguments}'
+                        )
                         try:
                             result = await tool(context=context, **arguments)
                             if result is None:
                                 result = 'Success'
                         except Exception as e:
+                            _logger.exception(
+                                f'Error during tool call with id {output.id}'
+                            )
                             result = f'ERROR: {e}'
                     else:
                         result = f'ERROR: Tool {tool_name} not found'
 
-                    print(f'Result: {result}', flush=True)
+                    _logger.debug(f'[{output.id}] Result: {result}')
                     function_results.append({
                         'type': 'function_result',
                         'name': output.name,

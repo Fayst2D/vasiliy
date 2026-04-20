@@ -20,3 +20,5 @@ keys.yaml
 
 config/stickers_cool.yaml
 config/system_prompt_cool.txt
+
+logs/

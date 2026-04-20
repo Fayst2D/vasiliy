@@ -10,7 +10,11 @@ from aiogram.utils.chat_action import ChatActionSender
 
 from ..agent import Agent
 from ..context import ChatContextManager
+from ..logging import setup_logger
 from ..types import Message, ToolCallContext
+
+
+_logger = setup_logger(__name__, 'logs/app.txt')
 
 
 class Application:
@@ -104,8 +108,10 @@ class Application:
                         tool_call_context, previous_messages,
                         new_messages
                     )
-                except Exception as e:
-                    print(e, flush=True)
+                except Exception:
+                    _logger.exception(
+                        'Exception while executing agent'
+                    )
 
             await self._context_manager.append_messages(
                 chat_id, new_messages + tool_call_context.new_messages

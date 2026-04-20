@@ -61,7 +61,6 @@ class ChatContextManager(ABC):
         :param new_context: new context for the chat
         """
 
-        print(context.chat_id, new_context, flush=True)
         await self.update_chat_context(context.chat_id, new_context)
 
 
