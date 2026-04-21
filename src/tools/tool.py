@@ -96,7 +96,6 @@ def _map_to_tool_paramter_description(
         float: 'number',
         int: 'integer',
         bool: 'boolean',
-
     }
 
     result: dict[str, tp.Any] = {

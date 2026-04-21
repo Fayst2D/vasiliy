@@ -67,11 +67,19 @@ async def play_casino(
     await asyncio.sleep(2)
 
     if score == 64:
-        return 'JACKPOT! You got 777!'
+        result = 'JACKPOT! You got 777!'
     elif score in [1, 22, 43]:
-        return 'Big Win! You matched 3 symbols!'
+        result = 'Big Win! You matched 3 symbols!'
+    else:
+        result = 'You lost. Better luck next time!'
 
-    return 'Better luck next time!'
+    context.new_messages.append(Message(
+        sender_name='Slot machine',
+        sender_shortname='',
+        timestamp=datetime.now(),
+        message_id=-1,
+        text=result
+    ))
 
 
 def make_sticker_tool(sticker_descriptions: list[dict[str, str]]):

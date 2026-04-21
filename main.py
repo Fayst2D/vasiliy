@@ -1,4 +1,8 @@
 import asyncio
+import json
+import typing as tp
+
+from pathlib import Path
 
 import yaml  # type: ignore
 
@@ -19,7 +23,7 @@ def read_yaml(p: str) -> dict:
 
 
 def create_sticker_tool() -> Tool:
-    config = read_yaml('config/stickers.yaml')
+    config = read_yaml('config/stickers_cool.yaml')
     data = [
         {
             'name': name,
@@ -33,14 +37,17 @@ def get_tools() -> list[Tool]:
     return [
         write_to_chat,
         leave_chat,
-        # reply_to_message,
         play_casino,
         create_sticker_tool()
     ]
 
 
+def tool_description_to_string(description: dict[str, tp.Any]) -> str:
+    return json.dumps(description, indent=4)
+
+
 async def build_system_prompt(bot: Bot) -> str:
-    with open('config/system_prompt.txt', 'r', encoding='utf-8') as file:
+    with open('config/system_prompt_cool.txt', 'r', encoding='utf-8') as file:
         content = file.read()
 
     me = await bot.me()
@@ -51,6 +58,8 @@ async def build_system_prompt(bot: Bot) -> str:
 
 
 async def main() -> None:
+    Path('logs').mkdir(exist_ok=True)
+
     config = read_yaml('config/config.yaml')
     keys = read_yaml('keys.yaml')
 
@@ -65,8 +74,9 @@ async def main() -> None:
     tools = get_tools()
     tools.append(as_tool(context_manager.update_context))
 
+    print(f'Total: {len(tools)} tools')
     for tool in tools:
-        print(tool.description)
+        print(tool_description_to_string(tool.description))
 
     agent = GeminiAgent(
         client=ga.Client(
@@ -75,7 +85,7 @@ async def main() -> None:
         model_name=config['model']['name'],
         tools=tools,
         generation_config=config['generation_config'],
-        concurrency_limit=config['app']['concurrency_limit']
+        concurrency_limit=config['app']['concurrency_limit'],
     )
 
     app = Application(
