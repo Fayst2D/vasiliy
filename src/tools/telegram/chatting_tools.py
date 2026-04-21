@@ -59,7 +59,8 @@ async def play_casino(
     context: ToolCallContext
 ) -> str:
     """
-    Run a slot-machine in the chat. The result is returned
+    Run a slot-machine. You can get following results: JACKPOT! You got 777!; Big Win! You matched 3 symbols!; You lost. Better luck next time.
+    Use this function to run a slot-machine or a casino
     """
 
     score = await context.bot.send_dice(
@@ -82,6 +83,7 @@ async def play_casino(
         message_id=-1,
         text=result
     ))
+    return result
 
 
 def make_sticker_tool(sticker_descriptions: list[dict[str, str]]):

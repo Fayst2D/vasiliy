@@ -59,14 +59,14 @@ class Application:
     ) -> None:
         prompt = '\n'.join([
             f'Time: {datetime.now()}',
-            '### Chat context:',
+            '## Chat context:',
             context.context or 'The context is empty. Use update_context tool to update it',
-            '### Previous messages',
+            '## Previous messages',
             *[
                 self._format_message(message)
                 for message in previos_messages
             ],
-            '### New messages',
+            '## New messages',
             *[
                 self._format_message(message)
                 for message in new_messages
