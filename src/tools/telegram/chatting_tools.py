@@ -1,6 +1,8 @@
 import asyncio
 import typing as tp
 
+from datetime import datetime
+
 from aiogram.enums.dice_emoji import DiceEmoji
 
 from ..tool import as_tool
