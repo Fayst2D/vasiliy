@@ -98,8 +98,6 @@ async def main() -> None:
 
     dp.message(F.text)(app.message_handler)
 
-    asyncio.create_task(app.background_worker())
-
     await dp.start_polling(bot)
 
 

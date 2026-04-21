@@ -33,7 +33,8 @@ class Application:
         self._message_queues = defaultdict(asyncio.Queue)  # type: ignore
         self._messages_limit = messages_limit
 
-        self._task_queues = asyncio.Queue()  # type: ignore
+        self._execution_counts: dict[int, int] = defaultdict(int)
+        self._locks: dict[int, asyncio.Lock] = {}
 
     async def _get_previous_messages(
         self,
@@ -78,48 +79,60 @@ class Application:
             context=context,
         )
 
-    async def background_worker(self) -> None:
-        while True:
-            chat_id = await self._task_queues.get()
-            message_queue = self._message_queues[chat_id]
-            if message_queue.empty():
-                continue
+    async def _process_chat_updates(self, chat_id: int) -> None:
+        message_queue = self._message_queues[chat_id]
+        if message_queue.empty():
+            return
 
-            new_messages = []
-            while not message_queue.empty():
-                new_messages.append(await message_queue.get())
+        new_messages = []
+        while not message_queue.empty():
+            new_messages.append(await message_queue.get())
 
-            previous_messages = await self._get_previous_messages(
-                chat_id, len(new_messages)
-            )
-            context = await self._context_manager.get_context(chat_id)
+        previous_messages = await self._get_previous_messages(
+            chat_id, len(new_messages)
+        )
+        context = await self._context_manager.get_context(chat_id)
 
-            tool_call_context = ToolCallContext(
-                bot=self._bot,
-                chat_id=chat_id,
-                context=context,
-                new_messages=[]
-            )
-            async with ChatActionSender.typing(
-                chat_id=chat_id, bot=self._bot
-            ):
-                try:
-                    await self._execute_agent(
-                        tool_call_context, previous_messages,
-                        new_messages
-                    )
-                except Exception:
-                    _logger.exception(
-                        'Exception while executing agent'
-                    )
+        tool_call_context = ToolCallContext(
+            bot=self._bot,
+            chat_id=chat_id,
+            context=context,
+            new_messages=[]
+        )
+        async with ChatActionSender.typing(
+            chat_id=chat_id, bot=self._bot
+        ):
+            try:
+                await self._execute_agent(
+                    tool_call_context, previous_messages,
+                    new_messages
+                )
+            except Exception:
+                _logger.exception(
+                    'Exception while executing agent'
+                )
 
-            await self._context_manager.append_messages(
-                chat_id, new_messages + tool_call_context.new_messages
-            )
-
+        await self._context_manager.append_messages(
+            chat_id, new_messages + tool_call_context.new_messages
+        )
+            
     async def message_handler(self, message: at.Message) -> None:
         chat_id = message.chat.id
         msg = Message.from_at_message(message)
 
         await self._message_queues[chat_id].put(msg)
-        await self._task_queues.put(chat_id)
+
+        self._execution_counts[chat_id] += 1
+
+        if chat_id not in self._locks:
+            self._locks[chat_id] = asyncio.Lock()
+
+        async with self._locks[chat_id]:
+            await self._process_chat_updates(chat_id)
+
+            self._execution_counts[chat_id] -= 1
+            if self._execution_counts[chat_id] > 0:
+                return
+
+            self._execution_counts.pop(chat_id, None)
+            self._locks.pop(chat_id, None)

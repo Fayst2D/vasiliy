@@ -1,8 +1,8 @@
 model:
   name: gemini-3.1-flash-lite-preview
 generation_config:
-  thinking_level: low
-  max_output_tokens: 10000
+  thinking_level: medium
+  max_output_tokens: 1000000
 database:
   url: sqlite+aiosqlite:///chat_history.db
 app:
