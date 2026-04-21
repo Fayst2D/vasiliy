@@ -53,6 +53,18 @@ async def reply_to_message(
     )
 
 
+def parse_slots(dice_value: int) -> dict[str, tp.Any]:
+    val = dice_value - 1
+    
+    symbols = ['➖', '🍇', '🍋', '7️⃣']
+    
+    reel_1 = val % 4           # Left reel
+    reel_2 = (val // 4) % 4    # Middle reel
+    reel_3 = (val // 16) % 4   # Right reel
+    
+    return ''.join([symbols[reel_1], symbols[reel_2], symbols[reel_3]]), \
+        dice_value == 64, reel_1 == reel_2 == reel_3
+
 
 @as_tool
 async def play_casino(
@@ -69,21 +81,16 @@ async def play_casino(
     )
     await asyncio.sleep(2)
 
-    if score == 64:
-        result = 'JACKPOT! You got 777!'
-    elif score in [1, 22, 43]:
-        result = 'Big Win! You matched 3 symbols!'
-    else:
-        result = 'You lost. Better luck next time!'
+    outcome, is_jackpot, is_win = parse_slots(score.dice.value)
 
     context.new_messages.append(Message(
         sender_name='Slot machine',
         sender_shortname='',
         timestamp=datetime.now(),
         message_id=-1,
-        text=result
+        text=outcome,
     ))
-    return result
+    return outcome
 
 
 def make_sticker_tool(sticker_descriptions: list[dict[str, str]]):
