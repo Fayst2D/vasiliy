@@ -163,3 +163,40 @@ async def create_poll(
     )
 
     context.new_messages.append(Message.from_at_message(poll_message))
+
+
+@as_tool
+async def create_quiz(
+        question: str,
+        options: str,
+        correct_option_ids: str,
+        explanation: str,
+        context: ToolCallContext,
+        allows_multiple_answers: bool = False
+) -> None:
+    """
+    Creates a quiz in the chat. Use this when you want to ask users about something.
+
+    :param question: The question to ask (e.g., "What is the capital of the Belarus?")
+    :param options: A list of options separated by commas (e.g., "Moscow, Berlin, Minsk"). Provide between 2 and 12 options.
+    :param correct_option_ids: list of monotonically increasing 0-based identifiers of the correct answer options (e.g., "0, 3, 5")
+    :param explanation: Text that is shown when a user chooses an incorrect answer 0-200 characters
+    :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
+    """
+
+
+    options_list = [opt for opt in options.split(',')]
+    correct_option_ids = [ans for ans in correct_option_ids.split(',')]
+
+
+    poll_message = await context.bot.send_poll(
+        chat_id=context.chat_id,
+        question=question,
+        options=options_list,
+        correct_option_ids=correct_option_ids,
+        explanation=explanation,
+        allows_multiple_answers=allows_multiple_answers,
+        type="quiz"
+    )
+
+    context.new_messages.append(Message.from_at_message(poll_message))
