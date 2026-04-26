@@ -125,3 +125,41 @@ def make_sticker_tool(sticker_descriptions: list[dict[str, str]]):
     doc += ', '.join(sticker_names)
     send_sticker.__doc__ = doc
     return as_tool(send_sticker)
+
+
+@as_tool
+async def create_poll(
+        question: str,
+        options: str,
+        context: ToolCallContext,
+        is_anonymous: bool = False,
+        allows_multiple_answers: bool = False,
+        allow_adding_options: bool = True,
+) -> None:
+    """
+    Creates a poll or a vote in the chat. Use this when you want to ask users for their opinion or run a survey.
+
+    :param question: The question to ask (e.g., "What is your favorite color?")
+    :param options: A list of options separated by commas (e.g., "Red, Green, Blue"). Provide between 2 and 10 options.
+    :param is_anonymous: If True, users will vote anonymously. Default is False.
+    :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
+    :param allow_adding_options: If True, users can add their own poll options. Default is True.
+    """
+
+
+    options_list = [opt for opt in options.split(',')]
+
+    if is_anonymous:
+        allow_adding_options = False
+
+
+    poll_message = await context.bot.send_poll(
+        chat_id=context.chat_id,
+        question=question,
+        options=options_list,
+        is_anonymous=is_anonymous,
+        allows_multiple_answers=allows_multiple_answers,
+        allow_adding_options=allow_adding_options,
+    )
+
+    context.new_messages.append(Message.from_at_message(poll_message))
