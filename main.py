@@ -37,6 +37,7 @@ def get_tools() -> list[Tool]:
     return [
         write_to_chat,
         leave_chat,
+        reply_to_message,
         play_casino,
         create_sticker_tool(),
         create_poll,
