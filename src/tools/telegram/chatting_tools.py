@@ -4,6 +4,7 @@ import typing as tp
 from datetime import datetime
 
 from aiogram.enums.dice_emoji import DiceEmoji
+from aiogram.types import ReactionTypeEmoji
 
 from ..tool import as_tool
 from ...types import ToolCallContext, Message
@@ -200,3 +201,23 @@ async def create_quiz(
     )
 
     context.new_messages.append(Message.from_at_message(poll_message))
+
+
+@as_tool
+async def react_to_message(
+        message_id: int,
+        reaction: tp.Literal['👍', '👎', '❤', '🔥', '🤔', '🤡','🥰', '🐳','😭', '🤯', '🎉', '💊'],
+        context: ToolCallContext
+) -> None:
+    """
+    Sets a reaction (emoji) on a specific message. Show agreement/disagreement, or express emotion.
+
+    :param message_id: The ID of the message to react to.
+    :param reaction: The emoji to use as a reaction.
+    """
+
+    await context.bot.set_message_reaction(
+        chat_id=context.chat_id,
+        message_id=message_id,
+        reaction=[ReactionTypeEmoji(emoji=reaction)]
+    )

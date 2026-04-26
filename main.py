@@ -14,7 +14,7 @@ from src.app import Application
 from src.context import SQLiteChatContextManager
 from src.tools import Tool, as_tool
 from src.tools.telegram import write_to_chat, leave_chat, \
-    make_sticker_tool, play_casino, create_poll, create_quiz
+    make_sticker_tool, play_casino, create_poll, create_quiz, react_to_message, reply_to_message
 
 
 def read_yaml(p: str) -> dict:
@@ -40,7 +40,8 @@ def get_tools() -> list[Tool]:
         play_casino,
         create_sticker_tool(),
         create_poll,
-        create_quiz
+        create_quiz,
+        react_to_message
     ]
 
 

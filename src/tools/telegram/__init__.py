@@ -1,5 +1,5 @@
 from .chatting_tools import write_to_chat, reply_to_message, \
-    make_sticker_tool, play_casino, leave_chat, create_poll, create_quiz
+    make_sticker_tool, play_casino, leave_chat, create_poll, create_quiz, react_to_message
 
 __all__ = [
     'write_to_chat',
@@ -8,5 +8,6 @@ __all__ = [
     'play_casino',
     'leave_chat',
     'create_poll',
-    'create_quiz'
+    'create_quiz',
+    'react_to_message'
 ]
