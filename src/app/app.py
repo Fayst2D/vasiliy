@@ -49,7 +49,7 @@ class Application:
         )
 
     def _format_message(self, message: Message) -> str:
-        return f'[{message.timestamp} {message.sender_name} ' \
+        return f'ID: {message.message_id} | [{message.timestamp} {message.sender_name} ' \
             f'(@{message.sender_shortname}): {message.text}]'
 
     async def _execute_agent(
