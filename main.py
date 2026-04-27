@@ -2,8 +2,6 @@ import asyncio
 import json
 import typing as tp
 
-from pathlib import Path
-
 import yaml  # type: ignore
 
 from aiogram import Bot, Dispatcher, F
@@ -62,8 +60,6 @@ async def build_system_prompt(bot: Bot) -> str:
 
 
 async def main() -> None:
-    Path('logs').mkdir(exist_ok=True)
-
     config = read_yaml('config/config.yaml')
     keys = read_yaml('keys.yaml')
 

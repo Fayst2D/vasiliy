@@ -1,5 +1,6 @@
 import logging
 import sys
+from pathlib import Path
 
 CO_LOGGING_FORMAT = '%(levelname)s [%(asctime)s]: %(message)s'
 
@@ -22,6 +23,7 @@ def setup_logger(
     if filename is None:
         return logger
 
+    Path('logs').mkdir(exist_ok=True)
     file_handler = logging.FileHandler(filename, encoding='utf-8')
     file_handler.setFormatter(formatter)
     file_handler.setLevel(file_level)
