@@ -134,7 +134,7 @@ async def create_poll(
         options: str,
         context: ToolCallContext,
         allows_multiple_answers: bool = False,
-        allow_adding_options: bool = True,
+        #allow_adding_options: bool = True,
 ) -> None:
     """
     Creates a poll or a vote in the chat. Use this when you want to ask users for their opinion or run a survey.
@@ -142,7 +142,6 @@ async def create_poll(
     :param question: The question to ask (e.g., "What is your favorite color?")
     :param options: A list of options separated ONLY by , (e.g., "Red, Green, Blue"). Provide between 2 and 10 options.
     :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
-    :param allow_adding_options: If True, users can add their own poll options. Default is True.
     """
 
 
@@ -155,7 +154,7 @@ async def create_poll(
         options=options_list,
         is_anonymous=False,
         allows_multiple_answers=allows_multiple_answers,
-        allow_adding_options=allow_adding_options,
+        allow_adding_options=False,
     )
 
     context.new_messages.append(Message(
