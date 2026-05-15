@@ -141,7 +141,7 @@ async def create_poll(
     Creates a poll or a vote in the chat. Use this when you want to ask users for their opinion or run a survey.
 
     :param question: The question to ask (e.g., "What is your favorite color?")
-    :param options: A list of options separated by commas (e.g., "Red, Green, Blue"). Provide between 2 and 10 options.
+    :param options: A list of options separated ONLY by , (e.g., "Red, Green, Blue"). Provide between 2 and 10 options.
     :param is_anonymous: If True, users will vote anonymously. Default is False.
     :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
     :param allow_adding_options: If True, users can add their own poll options. Default is True.
@@ -179,7 +179,7 @@ async def create_quiz(
     Creates a quiz in the chat. Use this when you want to ask users about something.
 
     :param question: The question to ask (e.g., "What is the capital of the Belarus?")
-    :param options: A list of options separated by commas (e.g., "Moscow, Berlin, Minsk"). Provide between 2 and 12 options.
+    :param options: A list of options separated ONLY by , (e.g., "Moscow, Berlin, Minsk"). Provide between 2 and 12 options.
     :param correct_option_ids: list of monotonically increasing 0-based identifiers of the correct answer options (e.g., "0, 3, 5")
     :param explanation: Text that is shown when a user chooses an incorrect answer 0-200 characters
     :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
