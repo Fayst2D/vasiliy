@@ -33,6 +33,7 @@ class Application:
         self._message_queues = defaultdict(asyncio.Queue)  # type: ignore
         self._messages_limit = messages_limit
 
+        self._poll_storage: dict[str, dict] = {}
         self._execution_counts: dict[int, int] = defaultdict(int)
         self._locks: dict[int, asyncio.Lock] = {}
 
@@ -97,7 +98,8 @@ class Application:
             bot=self._bot,
             chat_id=chat_id,
             context=context,
-            new_messages=[]
+            new_messages=[],
+            poll_storage = self._poll_storage
         )
         async with ChatActionSender.typing(
             chat_id=chat_id, bot=self._bot
@@ -136,3 +138,20 @@ class Application:
 
             self._execution_counts.pop(chat_id, None)
             self._locks.pop(chat_id, None)
+
+    async def poll_handler(self, answer: at.PollAnswer) -> None:
+        poll_id = answer.poll_id
+
+        user = answer.user
+        print(user)
+        print(user.id)
+        user_name = f"{user.first_name} {user.last_name or ''}".strip()
+        if user.username:
+            user_name += f" (@{user.username})"
+
+        print(self._poll_storage)
+
+        self._poll_storage[poll_id]["votes"][user.id] = {
+            "name": user_name,
+            "choices": answer.option_ids
+        }

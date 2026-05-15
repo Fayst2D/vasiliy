@@ -42,6 +42,7 @@ class ToolCallContext:
     chat_id: int
     context: str
     new_messages: list[Message]
+    poll_storage: dict[str, dict]
 
 
 __all__ = [

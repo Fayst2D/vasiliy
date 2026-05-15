@@ -133,7 +133,6 @@ async def create_poll(
         question: str,
         options: str,
         context: ToolCallContext,
-        is_anonymous: bool = False,
         allows_multiple_answers: bool = False,
         allow_adding_options: bool = True,
 ) -> None:
@@ -142,7 +141,6 @@ async def create_poll(
 
     :param question: The question to ask (e.g., "What is your favorite color?")
     :param options: A list of options separated ONLY by , (e.g., "Red, Green, Blue"). Provide between 2 and 10 options.
-    :param is_anonymous: If True, users will vote anonymously. Default is False.
     :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
     :param allow_adding_options: If True, users can add their own poll options. Default is True.
     """
@@ -150,20 +148,30 @@ async def create_poll(
 
     options_list = [opt for opt in options.split(',')]
 
-    if is_anonymous:
-        allow_adding_options = False
-
 
     poll_message = await context.bot.send_poll(
         chat_id=context.chat_id,
         question=question,
         options=options_list,
-        is_anonymous=is_anonymous,
+        is_anonymous=False,
         allows_multiple_answers=allows_multiple_answers,
         allow_adding_options=allow_adding_options,
     )
 
-    context.new_messages.append(Message.from_at_message(poll_message))
+    context.new_messages.append(Message(
+        sender_name='Poll machine',
+        sender_shortname='',
+        timestamp=datetime.now(),
+        message_id=-1,
+        text=f"Question: {question}, options: {options_list}, POLL_ID: {poll_message.poll.id}",
+    ))
+
+    context.poll_storage[poll_message.poll.id] = {
+        "question": question,
+        "options": options_list,
+        "votes": {}
+    }
+
 
 
 @as_tool
@@ -185,12 +193,11 @@ async def create_quiz(
     :param allows_multiple_answers: If True, users can choose more than one option. Default is False.
     """
 
-
     options_list = [opt for opt in options.split(',')]
     correct_option_ids = [ans for ans in correct_option_ids.split(',')]
 
 
-    poll_message = await context.bot.send_poll(
+    await context.bot.send_poll(
         chat_id=context.chat_id,
         question=question,
         options=options_list,
@@ -200,7 +207,50 @@ async def create_quiz(
         type="quiz"
     )
 
-    context.new_messages.append(Message.from_at_message(poll_message))
+
+
+
+
+@as_tool
+async def get_poll_results(
+        poll_id: str,
+        context: ToolCallContext
+) -> None:
+    """
+    Get the current results of a poll without stopping it.
+    Use this to check how people are voting.
+
+    :param poll_id: The ID of the poll
+    """
+
+    data = context.poll_storage.get(poll_id)
+
+    question = data["question"]
+    options_names = data["options"]
+    votes = data["votes"]
+
+
+    results_map = {idx: [] for idx in range(len(options_names))}
+    for user_id, vote_info in votes.items():
+        for choice_idx in vote_info["choices"]:
+            results_map[choice_idx].append(vote_info["name"])
+
+
+    lines = [f"results for: {question}"]
+    for idx, name in enumerate(options_names):
+        voters = results_map[idx]
+        voters_str = ", ".join(voters) if voters else "No one"
+        lines.append(f"• {name}: {voters_str}")
+
+    output_text = "\n".join(lines)
+
+    context.new_messages.append(Message(
+        sender_name='System',
+        sender_shortname='system',
+        timestamp=datetime.now(),
+        message_id=-1,
+        text=output_text,
+    ))
 
 
 @as_tool
